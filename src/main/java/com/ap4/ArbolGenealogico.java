@@ -1,21 +1,27 @@
+
 package com.ap4;
 
+/**
+ * Clase que implementa un árbol genealógico con operaciones de gestión y consulta.
+ * Permite registrar, eliminar, modificar y consultar relaciones familiares.
+ */
 public class ArbolGenealogico {
     private Nodo raiz;
 
+
+    /**
+     * Devuelve la raíz del árbol genealógico.
+     * @return Nodo raíz, o null si el árbol está vacío.
+     */
     public Nodo getRaiz() {
         return raiz;
     }
 
     /**
-     * Registrar: Insertar una nueva persona, manteniendo a los hijos
-     * de cada padre ordenados por "cedula".
-     *
-     * Reglas de retorno:
-     * - Si la raíz es nula, el nuevo nodo se vuelve raíz y retorna 0.
-     * - Si la cédula del padre no existe, retorna 2 (no inserta).
-     * - Si la cédula a insertar ya existe, retorna 3 (no inserta).
-     * - Si inserta correctamente, retorna 1.
+     * Inserta una nueva persona en el árbol, manteniendo a los hijos ordenados por cédula.
+     * @param persona Datos de la persona a registrar
+     * @param cedulaPadre Cédula del padre (-1 si es raíz)
+     * @return 0 si es la raíz, 1 si inserta correctamente, 2 si el padre no existe, 3 si la cédula ya existe
      */
     public int registrar(DatosPersonales persona, int cedulaPadre) {
         // Árbol vacío: el primer insert siempre es la raíz
@@ -78,6 +84,10 @@ public class ArbolGenealogico {
         return cabeza;
     }
 
+
+    /**
+     * Imprime el árbol genealógico en consola en formato jerárquico.
+     */
     public void imprimir() {
         imprimirRec(raiz, 0);
     }
@@ -94,6 +104,11 @@ public class ArbolGenealogico {
     /*
      * Eliminar: Eliminar a una persona a partir de su cedula. Si el nodo a eliminar corresponde a un padre,
      * será reemplazdo por su hijo de mayor edad.
+     */
+    /**
+     * Elimina una persona del árbol según su cédula. Si es padre, lo reemplaza su hijo mayor.
+     * @param cedula Cédula de la persona a eliminar
+     * @return 1 si elimina, 2 si no existe, 3 si el árbol está vacío
      */
     public int eliminar(int cedula) {
         if (raiz == null)
@@ -218,6 +233,14 @@ public class ArbolGenealogico {
      * Actualizar: Modificar cualquiera de los campos (nombre, cédula o edad) de un registro existente.
      */
 
+    /**
+     * Modifica los datos de una persona existente.
+     * @param cedulaActual Cédula actual
+     * @param nuevoNombre Nuevo nombre (opcional)
+     * @param nuevaCedula Nueva cédula (opcional)
+     * @param nuevaEdad Nueva edad (opcional)
+     * @return 1 si modifica, 2 si no existe, 3 si la nueva cédula ya existe
+     */
     public int modificar(int cedulaActual, String nuevoNombre, Integer nuevaCedula, Integer nuevaEdad) {
         Nodo objetivo = buscarPorCedula(raiz, cedulaActual);
         if (objetivo == null)
@@ -268,6 +291,11 @@ public class ArbolGenealogico {
      * Padre: Mostrar el padre de un registro dado su número de cédula
     */
 
+    /**
+     * Obtiene los datos del padre de una persona.
+     * @param cedulaHijo Cédula del hijo
+     * @return DatosPersonales del padre, o null si no existe
+     */
     public DatosPersonales obtenerPadre(int cedulaHijo) {
         if (raiz == null)
             return null;
@@ -275,6 +303,11 @@ public class ArbolGenealogico {
         return (padre != null) ? padre.datos : null;
     }
 
+    /**
+     * Muestra en consola el padre de una persona.
+     * @param cedulaHijo Cédula del hijo
+     * @return 1 si lo muestra, 2 si no existe, 3 si árbol vacío, 4 si no tiene padre
+     */
     public int mostrarPadre(int cedulaHijo) {
         if (raiz == null)
             return 3;
@@ -293,6 +326,11 @@ public class ArbolGenealogico {
 
     /*
      * Hijos: Mostrar los hijos de una persona, dada su cédula.
+     */
+    /**
+     * Muestra en consola los hijos de una persona.
+     * @param cedulaPadre Cédula del padre
+     * @return 1 si los muestra, 2 si no existe, 3 si árbol vacío, 4 si no tiene hijos
      */
     public int mostrarHijos(int cedulaPadre) {
         if (raiz == null)
@@ -313,6 +351,11 @@ public class ArbolGenealogico {
         return 1;
     }
 
+    /**
+     * Devuelve un arreglo con los hijos de una persona.
+     * @param cedulaPadre Cédula del padre
+     * @return Arreglo de hijos, vacío si no tiene
+     */
     public DatosPersonales[] obtenerHijos(int cedulaPadre) {
         if (raiz == null)
             return new DatosPersonales[0];
@@ -347,6 +390,11 @@ public class ArbolGenealogico {
      * Hermanos: Mostrar los hermanos de una persona, dada su cédula.
      */
 
+    /**
+     * Muestra en consola los hermanos de una persona.
+     * @param cedula Cédula de la persona
+     * @return 1 si los muestra, 2 si no existe, 3 si árbol vacío, 4 si no tiene hermanos
+     */
     public int mostrarHermanos(int cedula) {
         if (raiz == null)
             return 3;
@@ -376,6 +424,11 @@ public class ArbolGenealogico {
         return 1;
     }
 
+    /**
+     * Devuelve un arreglo con los hermanos de una persona.
+     * @param cedula Cédula de la persona
+     * @return Arreglo de hermanos, vacío si no tiene
+     */
     public DatosPersonales[] obtenerHermanos(int cedula) {
         if (raiz == null)
             return new DatosPersonales[0];
@@ -408,6 +461,11 @@ public class ArbolGenealogico {
     /*
      * Ancestros: Mostrar todos los ancestros de una persona, dada su cédula.
      */
+    /**
+     * Muestra en consola los ancestros de una persona.
+     * @param cedula Cédula de la persona
+     * @return 1 si los muestra, 2 si no existe, 3 si árbol vacío, 4 si no tiene ancestros
+     */
     public int mostrarAncestros(int cedula) {
         if (raiz == null)
             return 3;
@@ -427,6 +485,11 @@ public class ArbolGenealogico {
         return 1;
     }
 
+    /**
+     * Devuelve un arreglo con los ancestros de una persona.
+     * @param cedula Cédula de la persona
+     * @return Arreglo de ancestros, vacío si no tiene
+     */
     public DatosPersonales[] obtenerAncestros(int cedula) {
         if (raiz == null)
             return new DatosPersonales[0];
@@ -462,6 +525,11 @@ public class ArbolGenealogico {
     /*
      * Descendientes: Mostrar todos los descendientes de una persona, dada su cédula.
      */
+    /**
+     * Muestra en consola los descendientes de una persona.
+     * @param cedula Cédula de la persona
+     * @return 1 si los muestra, 2 si no existe, 3 si árbol vacío, 4 si no tiene descendientes
+     */
     public int mostrarDescendientes(int cedula) {
         if (raiz == null)
             return 3;
@@ -487,6 +555,11 @@ public class ArbolGenealogico {
     }
 
 
+    /**
+     * Devuelve un arreglo con los descendientes de una persona.
+     * @param cedula Cédula de la persona
+     * @return Arreglo de descendientes, vacío si no tiene
+     */
     public DatosPersonales[] obtenerDescendientes(int cedula) {
         if (raiz == null)
             return new DatosPersonales[0];
@@ -521,6 +594,10 @@ public class ArbolGenealogico {
     /*
      * Nodo con Mayor Grado: Mostrar la información del nodo que tiene el mayor número de hijos.
      */
+    /**
+     * Muestra en consola el nodo con mayor número de hijos.
+     * @return 1 si lo muestra, 3 si árbol vacío
+     */
     public int mostrarNodoConMasHijos() {
         if (raiz == null)
             return 3;
@@ -530,6 +607,10 @@ public class ArbolGenealogico {
         return 1;
     }
 
+    /**
+     * Devuelve los datos del nodo con mayor número de hijos.
+     * @return DatosPersonales del nodo, o null si árbol vacío
+     */
     public DatosPersonales obtenerNodoConMasHijos() {
         if (raiz == null)
             return null;
@@ -573,6 +654,10 @@ public class ArbolGenealogico {
     /*
      * Nodo con Mayor Nivel: Mostrar la información del nodo que se encuentra más profundo en el árbol.
      */
+    /**
+     * Muestra en consola el nodo más profundo del árbol.
+     * @return 1 si lo muestra, 3 si árbol vacío
+     */
     public int mostrarNodoMasProfundo() {
         if (raiz == null)
             return 3;
@@ -582,6 +667,10 @@ public class ArbolGenealogico {
         return 1;
     }
 
+    /**
+     * Devuelve los datos del nodo más profundo del árbol.
+     * @return DatosPersonales del nodo, o null si árbol vacío
+     */
     public DatosPersonales obtenerNodoMasProfundo() {
         if (raiz == null)
             return null;
@@ -590,6 +679,10 @@ public class ArbolGenealogico {
         return ref.nodo.datos;
     }
 
+    /**
+     * Devuelve el nivel del nodo más profundo del árbol.
+     * @return Nivel (entero), o -1 si árbol vacío
+     */
     public int nivelNodoMasProfundo() {
         if (raiz == null)
             return -1;
@@ -622,6 +715,11 @@ public class ArbolGenealogico {
     /*
      * Altura del Arbol: Calcular y mmostrar la altura total del árbol.
      */
+
+    /**
+     * Calcula la altura del árbol (número de aristas desde la raíz al nodo más profundo).
+     * @return Altura del árbol, -1 si vacío
+     */
     public int alturaArbol() {
         return alturaDesde(raiz);
     }
@@ -638,11 +736,21 @@ public class ArbolGenealogico {
         return maxHijo + 1; 
     }
 
+
+    /**
+     * Devuelve el número de niveles del árbol (altura + 1).
+     * @return Niveles del árbol
+     */
     public int nivelesArbol() {
         int alt = alturaArbol();
         return (alt < 0) ? 0 : alt + 1;
     }
 
+
+    /**
+     * Muestra en consola la altura y los niveles del árbol.
+     * @return 1 si lo muestra, 3 si árbol vacío
+     */
     public int mostrarAlturaArbol() {
         if (raiz == null) {
             System.out.println("Árbol vacío. Altura = -1, Niveles = 0.");
@@ -656,6 +764,11 @@ public class ArbolGenealogico {
     /*
      * Nivel de un Registro: Determinar y mostrar el nivel al que pertenece una persona especifica, dada su cédula.
      */
+    /**
+     * Muestra en consola el nivel de una persona según su cédula.
+     * @param cedula Cédula de la persona
+     * @return 1 si lo muestra, 2 si no existe, 3 si árbol vacío
+     */
     public int mostrarNivelPersona(int cedula) {
         if (raiz == null)
             return 3;
@@ -667,6 +780,12 @@ public class ArbolGenealogico {
     }
 
 
+
+    /**
+     * Devuelve el nivel de una persona según su cédula.
+     * @param cedula Cédula de la persona
+     * @return Nivel (entero), o -1 si no existe
+     */
     public int nivelPersona(int cedula) {
         return nivelDesde(raiz, cedula, 0);
     }
@@ -689,6 +808,11 @@ public class ArbolGenealogico {
     /*
      * Registros por Nivel: Mostrar todos los registros ubicados en un nivel particular del arbol
      */
+    /**
+     * Muestra en consola los registros ubicados en un nivel específico del árbol.
+     * @param nivelObjetivo Nivel a consultar
+     * @return 1 si los muestra, 3 si árbol vacío, 4 si nivel inválido o vacío
+     */
     public int mostrarRegistrosEnNivel(int nivelObjetivo) {
         if (raiz == null)
             return 3;
@@ -705,6 +829,11 @@ public class ArbolGenealogico {
     }
 
 
+    /**
+     * Devuelve un arreglo con los registros de un nivel específico.
+     * @param nivelObjetivo Nivel a consultar
+     * @return Arreglo de registros, vacío si no hay
+     */
     public DatosPersonales[] obtenerRegistrosEnNivel(int nivelObjetivo) {
         if (raiz == null || nivelObjetivo < 0)
             return new DatosPersonales[0];
@@ -766,6 +895,11 @@ public class ArbolGenealogico {
 
     /*
      * Eliminar Nivel: Eliminar todos los nodos que se encuentren en un nivel específico del árbol.
+     */
+    /**
+     * Elimina todos los nodos que se encuentren en un nivel específico del árbol.
+     * @param nivelObjetivo Nivel a eliminar
+     * @return 1 si elimina, 3 si árbol vacío, 4 si nivel inválido o vacío
      */
     public int eliminarNivel(int nivelObjetivo) {
         if (raiz == null)
