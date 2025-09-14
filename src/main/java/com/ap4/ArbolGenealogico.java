@@ -41,9 +41,7 @@ public class ArbolGenealogico {
         return 1;
     }
 
-    // --------- Utilidades privadas ---------
 
-    // Busca un nodo por cédula (DFS sobre hijo y hermano)
     private Nodo buscarPorCedula(Nodo actual, int cedula) {
         if (actual == null)
             return null;
@@ -64,8 +62,6 @@ public class ArbolGenealogico {
         return buscarPorCedula(actual, cedula) != null;
     }
 
-    // Inserta un nodo en la lista (simplemente enlazada) de hijos ordenada por
-    // cédula
     private Nodo insertarOrdenadoPorCedula(Nodo cabeza, Nodo nuevo) {
         if (cabeza == null || nuevo.datos.getCedula() < cabeza.datos.getCedula()) {
             nuevo.liga = cabeza;
@@ -77,13 +73,11 @@ public class ArbolGenealogico {
             ant = act;
             act = act.liga;
         }
-        // (Ya validamos duplicados antes con existeCedula)
         nuevo.liga = act;
         ant.liga = nuevo;
         return cabeza;
     }
 
-    // --------- (Opcional) impresión simple para depurar ---------
     public void imprimir() {
         imprimirRec(raiz, 0);
     }
@@ -93,12 +87,14 @@ public class ArbolGenealogico {
             return;
         String tab = "  ".repeat(nivel);
         System.out.println(tab + "- " + n.datos);
-        // hijos
         imprimirRec(n.ligaLista, nivel + 1);
-        // hermanos
         imprimirRec(n.liga, nivel);
     }
 
+    /*
+     * Eliminar: Eliminar a una persona a partir de su cedula. Si el nodo a eliminar corresponde a un padre,
+     * será reemplazdo por su hijo de mayor edad.
+     */
     public int eliminar(int cedula) {
         if (raiz == null)
             return 3;
@@ -107,9 +103,8 @@ public class ArbolGenealogico {
         if (objetivo == null)
             return 2;
 
-        // Caso 1: hoja (sin hijos)
         if (objetivo.ligaLista == null) {
-            if (objetivo == raiz) { // raíz hoja
+            if (objetivo == raiz) { 
                 raiz = null;
                 return 1;
             }
@@ -120,10 +115,8 @@ public class ArbolGenealogico {
             return 1;
         }
 
-        // Caso 2: padre (con hijos) -> reemplazar por su hijo de mayor edad
         Nodo padre = (objetivo == raiz) ? null : buscarPadre(raiz, cedula);
 
-        // Encontrar hijo de mayor edad y su previo
         Nodo prevMax = null, max = objetivo.ligaLista;
         Nodo prev = null, cur = objetivo.ligaLista;
         int edadMax = -1;
@@ -138,35 +131,28 @@ public class ArbolGenealogico {
             cur = cur.liga;
         }
 
-        // Quitar max de la lista de hijos del objetivo
         if (prevMax == null)
-            objetivo.ligaLista = max.liga; // max era cabeza
+            objetivo.ligaLista = max.liga; 
         else
             prevMax.liga = max.liga;
 
-        // Fusionar (ordenado por cédula) los "otros hijos" del objetivo con los hijos
-        // de max
-        Nodo restoHijos = objetivo.ligaLista; // ya sin max
+
+        Nodo restoHijos = objetivo.ligaLista; 
         Nodo hijosDeMax = max.ligaLista;
         max.ligaLista = fusionarListasOrdenadasPorCedula(restoHijos, hijosDeMax);
-        max.liga = null; // lo reinsertaremos en la lista de hijos del padre
+        max.liga = null; 
 
         if (padre == null) {
-            // objetivo era la raíz
-            raiz = max; // max pasa a ser la nueva raíz
+            raiz = max; 
             return 1;
         } else {
-            // quitar objetivo de la lista de hijos del padre e insertar max manteniendo
-            // orden
             padre.ligaLista = quitarDeHijos(padre.ligaLista, cedula);
             padre.ligaLista = insertarOrdenadoPorCedula(padre.ligaLista, max);
             return 1;
         }
     }
 
-    /*----------------- Helpers privados -----------------*/
 
-    // Devuelve el padre del nodo con esa cédula (o null si es la raíz o no existe)
     private Nodo buscarPadre(Nodo actual, int cedulaBuscada) {
         if (actual == null)
             return null;
@@ -182,8 +168,6 @@ public class ArbolGenealogico {
         return null;
     }
 
-    // Quita de una lista simple (hijos de un padre) el nodo por cédula y retorna la
-    // nueva cabeza
     private Nodo quitarDeHijos(Nodo cabeza, int cedulaBuscada) {
         if (cabeza == null)
             return null;
@@ -199,7 +183,6 @@ public class ArbolGenealogico {
         return cabeza;
     }
 
-    // Fusión en una sola lista ordenada por cédula (reusa nodos, no crea nuevos)
     private Nodo fusionarListasOrdenadasPorCedula(Nodo a, Nodo b) {
         if (a == null)
             return b;
@@ -231,28 +214,27 @@ public class ArbolGenealogico {
         return cabeza;
     }
 
+    /*
+     * Actualizar: Modificar cualquiera de los campos (nombre, cédula o edad) de un registro existente.
+     */
+
     public int modificar(int cedulaActual, String nuevoNombre, Integer nuevaCedula, Integer nuevaEdad) {
-        // 1) buscar objetivo
         Nodo objetivo = buscarPorCedula(raiz, cedulaActual);
         if (objetivo == null)
             return 2;
 
-        // 2) validar nueva cédula (si la piden y realmente cambia)
         boolean cambiaCedula = (nuevaCedula != null && nuevaCedula != cedulaActual);
         if (cambiaCedula && existeCedula(raiz, nuevaCedula))
             return 3;
 
-        // 3) si cambia cédula, reubicar manteniendo orden
         if (cambiaCedula) {
             if (objetivo != raiz) {
-                // quitar de lista de hijos del padre
                 Nodo padre = buscarPadre(raiz, cedulaActual);
-                // (si no hay padre, era raíz; se maneja aparte)
                 if (padre != null) {
                     Nodo head = padre.ligaLista;
                     if (head != null) {
                         if (head.datos.getCedula() == cedulaActual) {
-                            padre.ligaLista = head.liga; // era cabeza
+                            padre.ligaLista = head.liga;
                         } else {
                             Nodo ant = head, act = head.liga;
                             while (act != null && act.datos.getCedula() != cedulaActual) {
@@ -260,24 +242,20 @@ public class ArbolGenealogico {
                                 act = act.liga;
                             }
                             if (act != null)
-                                ant.liga = act.liga; // desvincular
+                                ant.liga = act.liga;
                         }
                     }
-                    objetivo.liga = null; // importante: lo vamos a reinsertar
+                    objetivo.liga = null;
                     objetivo.datos.setCedula(nuevaCedula);
-                    // reinsertar ordenado por cédula
                     padre.ligaLista = insertarOrdenadoPorCedula(padre.ligaLista, objetivo);
                 } else {
-                    // era raíz: sólo cambiar valor
                     objetivo.datos.setCedula(nuevaCedula);
                 }
             } else {
-                // raíz: sólo cambiar valor
                 objetivo.datos.setCedula(nuevaCedula);
             }
         }
 
-        // 4) aplicar cambios de nombre/edad (no afectan el orden)
         if (nuevoNombre != null)
             objetivo.datos.setNombre(nuevoNombre);
         if (nuevaEdad != null)
@@ -286,11 +264,15 @@ public class ArbolGenealogico {
         return 1;
     }
 
+    /*
+     * Padre: Mostrar el padre de un registro dado su número de cédula
+    */
+
     public DatosPersonales obtenerPadre(int cedulaHijo) {
         if (raiz == null)
             return null;
-        Nodo padre = buscarPadre(raiz, cedulaHijo); // ya implementado en tu clase
-        return (padre != null) ? padre.datos : null; // null si no existe o si es raíz
+        Nodo padre = buscarPadre(raiz, cedulaHijo); 
+        return (padre != null) ? padre.datos : null;
     }
 
     public int mostrarPadre(int cedulaHijo) {
@@ -309,6 +291,9 @@ public class ArbolGenealogico {
         return 1;
     }
 
+    /*
+     * Hijos: Mostrar los hijos de una persona, dada su cédula.
+     */
     public int mostrarHijos(int cedulaPadre) {
         if (raiz == null)
             return 3;
@@ -320,10 +305,10 @@ public class ArbolGenealogico {
             return 4;
 
         System.out.println("Hijos de " + padre.datos.getNombre() + " (" + cedulaPadre + "):");
-        Nodo h = padre.ligaLista; // cabeza de la lista de hijos
-        while (h != null) { // ya están ordenados por cédula
+        Nodo h = padre.ligaLista; 
+        while (h != null) { 
             System.out.println("  - " + h.datos);
-            h = h.liga; // siguiente hermano
+            h = h.liga;
         }
         return 1;
     }
@@ -342,7 +327,7 @@ public class ArbolGenealogico {
         Nodo h = padre.ligaLista;
         int i = 0;
         while (h != null) {
-            hijos[i++] = h.datos; // mantiene el orden por cédula
+            hijos[i++] = h.datos;
             h = h.liga;
         }
         return hijos;
@@ -358,6 +343,10 @@ public class ArbolGenealogico {
         return c;
     }
 
+    /*
+     * Hermanos: Mostrar los hermanos de una persona, dada su cédula.
+     */
+
     public int mostrarHermanos(int cedula) {
         if (raiz == null)
             return 3;
@@ -368,9 +357,8 @@ public class ArbolGenealogico {
 
         Nodo padre = buscarPadre(raiz, cedula);
         if (padre == null)
-            return 4; // la raíz no tiene hermanos
+            return 4; 
 
-        // contar hermanos (todos los hijos del padre excepto el propio)
         int cnt = 0;
         for (Nodo h = padre.ligaLista; h != null; h = h.liga) {
             if (h.datos.getCedula() != cedula)
@@ -412,14 +400,14 @@ public class ArbolGenealogico {
         int i = 0;
         for (Nodo h = padre.ligaLista; h != null; h = h.liga) {
             if (h.datos.getCedula() != cedula)
-                hermanos[i++] = h.datos; // ya vienen ordenados por cédula
+                hermanos[i++] = h.datos;
         }
         return hermanos;
     }
 
-    // 1) Imprimir ancestros en consola.
-    // Códigos: 1 = OK, 2 = cédula no existe, 3 = árbol vacío, 4 = es raíz (sin
-    // ancestros)
+    /*
+     * Ancestros: Mostrar todos los ancestros de una persona, dada su cédula.
+     */
     public int mostrarAncestros(int cedula) {
         if (raiz == null)
             return 3;
@@ -433,18 +421,12 @@ public class ArbolGenealogico {
             return 4;
 
         System.out.println("Ancestros de " + persona.datos.getNombre() + " (" + cedula + "):");
-        // De más cercano (padre) a más lejano (raíz)
         for (int i = 0; i < ancestros.length; i++) {
             System.out.println("  - " + ancestros[i]);
         }
-        // Si quisieras imprimir desde la raíz hasta el padre, invierte el for:
-        // for (int i = ancestros.length - 1; i >= 0; i--) { ... }
-
         return 1;
     }
 
-    // 2) Devolver ancestros como arreglo (sin colecciones).
-    // Orden: [padre, abuelo, bisabuelo, ..., raíz]
     public DatosPersonales[] obtenerAncestros(int cedula) {
         if (raiz == null)
             return new DatosPersonales[0];
@@ -477,9 +459,9 @@ public class ArbolGenealogico {
         return c;
     }
 
-    // 1) Imprimir todos los descendientes (jerárquico, respetando el orden por
-    // cédula).
-    // Códigos: 1=OK, 2=cédula no existe, 3=árbol vacío, 4=no tiene descendientes
+    /*
+     * Descendientes: Mostrar todos los descendientes de una persona, dada su cédula.
+     */
     public int mostrarDescendientes(int cedula) {
         if (raiz == null)
             return 3;
@@ -492,12 +474,11 @@ public class ArbolGenealogico {
             return 4;
 
         System.out.println("Descendientes de " + persona.datos.getNombre() + " (" + cedula + "):");
-        imprimirDescendencia(persona, 1); // imprime hijos, nietos, ...
+        imprimirDescendencia(persona, 1); 
         return 1;
     }
 
     private void imprimirDescendencia(Nodo nodo, int nivel) {
-        // recorre hijos (ya ordenados por cédula) y baja en profundidad
         for (Nodo h = nodo.ligaLista; h != null; h = h.liga) {
             String tab = "  ".repeat(nivel);
             System.out.println(tab + "- " + h.datos);
@@ -505,10 +486,7 @@ public class ArbolGenealogico {
         }
     }
 
-    // 2) Devolver todos los descendientes como arreglo (preorden por niveles de
-    // hijos).
-    // Si no tiene descendientes / no existe / árbol vacío, retorna arreglo de
-    // longitud 0.
+
     public DatosPersonales[] obtenerDescendientes(int cedula) {
         if (raiz == null)
             return new DatosPersonales[0];
@@ -526,24 +504,23 @@ public class ArbolGenealogico {
     private int contarDescendientesDesde(Nodo nodo) {
         int c = 0;
         for (Nodo h = nodo.ligaLista; h != null; h = h.liga) {
-            c += 1; // el hijo
-            c += contarDescendientesDesde(h); // y todos sus descendientes
+            c += 1; 
+            c += contarDescendientesDesde(h);
         }
         return c;
     }
 
     private int llenarDescendientesDesde(Nodo nodo, DatosPersonales[] out, int idx) {
         for (Nodo h = nodo.ligaLista; h != null; h = h.liga) {
-            out[idx++] = h.datos; // preorden: primero el hijo
-            idx = llenarDescendientesDesde(h, out, idx); // luego su subárbol
+            out[idx++] = h.datos;
+            idx = llenarDescendientesDesde(h, out, idx);
         }
         return idx;
     }
 
-    // En ArbolGenealogico
-
-    // 1) Imprimir el nodo con más hijos.
-    // Códigos: 1=OK, 3=árbol vacío
+    /*
+     * Nodo con Mayor Grado: Mostrar la información del nodo que tiene el mayor número de hijos.
+     */
     public int mostrarNodoConMasHijos() {
         if (raiz == null)
             return 3;
@@ -553,7 +530,6 @@ public class ArbolGenealogico {
         return 1;
     }
 
-    // 2) Devolver sus datos (o null si árbol vacío)
     public DatosPersonales obtenerNodoConMasHijos() {
         if (raiz == null)
             return null;
@@ -562,9 +538,6 @@ public class ArbolGenealogico {
         return ref.nodo.datos;
     }
 
-    // ------- Helpers privados -------
-
-    // Estructura mínima para llevar el máximo encontrado
     private static final class MaxRef {
         Nodo nodo;
         int hijos;
@@ -577,8 +550,7 @@ public class ArbolGenealogico {
         return r;
     }
 
-    // DFS: actualiza ref si encuentra un nodo con más hijos (empates: se queda el
-    // primero en preorden)
+
     private void dfsMaxHijos(Nodo actual, MaxRef ref) {
         if (actual == null)
             return;
@@ -587,21 +559,20 @@ public class ArbolGenealogico {
             ref.hijos = cnt;
             ref.nodo = actual;
         }
-        dfsMaxHijos(actual.ligaLista, ref); // bajar a hijos
-        dfsMaxHijos(actual.liga, ref); // recorrer hermanos
+        dfsMaxHijos(actual.ligaLista, ref);
+        dfsMaxHijos(actual.liga, ref);
     }
 
-    // Cuenta hijos directos de un nodo (lista simple de hermanos en ligaLista)
     private int contarHijosNodo(Nodo n) {
         int c = 0;
         for (Nodo h = n.ligaLista; h != null; h = h.liga)
             c++;
         return c;
     }
-    // En ArbolGenealogico
-
-    // 1) Imprimir el nodo más profundo.
-    // Códigos: 1=OK, 3=árbol vacío
+    
+    /*
+     * Nodo con Mayor Nivel: Mostrar la información del nodo que se encuentra más profundo en el árbol.
+     */
     public int mostrarNodoMasProfundo() {
         if (raiz == null)
             return 3;
@@ -611,7 +582,6 @@ public class ArbolGenealogico {
         return 1;
     }
 
-    // 2) Obtener sus datos (o null si el árbol está vacío)
     public DatosPersonales obtenerNodoMasProfundo() {
         if (raiz == null)
             return null;
@@ -620,7 +590,6 @@ public class ArbolGenealogico {
         return ref.nodo.datos;
     }
 
-    // (Opcional) Solo el nivel de profundidad máxima (-1 si vacío)
     public int nivelNodoMasProfundo() {
         if (raiz == null)
             return -1;
@@ -629,7 +598,6 @@ public class ArbolGenealogico {
         return ref.depth;
     }
 
-    // ---------- Helpers privados ----------
     private static final class DeepRef {
         Nodo nodo;
         int depth;
@@ -647,34 +615,34 @@ public class ArbolGenealogico {
             ref.depth = depth;
             ref.nodo = actual;
         }
-        dfsMasProfundo(actual.ligaLista, depth + 1, ref); // bajar a hijos
-        dfsMasProfundo(actual.liga, depth, ref); // recorrer hermanos al mismo nivel
+        dfsMasProfundo(actual.ligaLista, depth + 1, ref); 
+        dfsMasProfundo(actual.liga, depth, ref);
     }
 
-    // 1) Altura del árbol (en aristas). Vacío => -1
+    /*
+     * Altura del Arbol: Calcular y mmostrar la altura total del árbol.
+     */
     public int alturaArbol() {
         return alturaDesde(raiz);
     }
 
     private int alturaDesde(Nodo n) {
         if (n == null)
-            return -1; // convención para vacío
+            return -1; 
         int maxHijo = -1;
         for (Nodo h = n.ligaLista; h != null; h = h.liga) {
             int altHijo = alturaDesde(h);
             if (altHijo > maxHijo)
                 maxHijo = altHijo;
         }
-        return maxHijo + 1; // hoja => 0
+        return maxHijo + 1; 
     }
 
-    // 2) Niveles del árbol (altura + 1). Vacío => 0
     public int nivelesArbol() {
         int alt = alturaArbol();
         return (alt < 0) ? 0 : alt + 1;
     }
 
-    // 3) Mostrar altura y niveles. Códigos: 1=OK, 3=árbol vacío
     public int mostrarAlturaArbol() {
         if (raiz == null) {
             System.out.println("Árbol vacío. Altura = -1, Niveles = 0.");
@@ -685,8 +653,9 @@ public class ArbolGenealogico {
         return 1;
     }
 
-    // 1) Mostrar nivel en consola.
-    // Códigos: 1 = OK, 2 = cédula no existe, 3 = árbol vacío
+    /*
+     * Nivel de un Registro: Determinar y mostrar el nivel al que pertenece una persona especifica, dada su cédula.
+     */
     public int mostrarNivelPersona(int cedula) {
         if (raiz == null)
             return 3;
@@ -697,13 +666,12 @@ public class ArbolGenealogico {
         return 1;
     }
 
-    // 2) Devolver el nivel (0 para la raíz).
-    // Retorna -1 si la cédula no existe o el árbol está vacío.
+
     public int nivelPersona(int cedula) {
         return nivelDesde(raiz, cedula, 0);
     }
 
-    // ---------- Helper DFS (sin colecciones) ----------
+
     private int nivelDesde(Nodo actual, int cedula, int nivelActual) {
         if (actual == null)
             return -1;
@@ -711,17 +679,16 @@ public class ArbolGenealogico {
         if (actual.datos != null && actual.datos.getCedula() == cedula) {
             return nivelActual;
         }
-        // Buscar en hijos (aumenta nivel)
         int enHijos = nivelDesde(actual.ligaLista, cedula, nivelActual + 1);
         if (enHijos >= 0)
             return enHijos;
 
-        // Buscar en hermanos (mismo nivel)
         return nivelDesde(actual.liga, cedula, nivelActual);
     }
 
-    // 1) Imprimir todos los registros de un nivel.
-    // Códigos: 1=OK, 3=árbol vacío, 4=sin registros en ese nivel (o nivel inválido)
+    /*
+     * Registros por Nivel: Mostrar todos los registros ubicados en un nivel particular del arbol
+     */
     public int mostrarRegistrosEnNivel(int nivelObjetivo) {
         if (raiz == null)
             return 3;
@@ -737,9 +704,7 @@ public class ArbolGenealogico {
         return 1;
     }
 
-    // 2) Devolver los registros de un nivel como arreglo (sin colecciones).
-    // Si no hay registros / árbol vacío / nivel inválido, retorna arreglo de
-    // longitud 0.
+
     public DatosPersonales[] obtenerRegistrosEnNivel(int nivelObjetivo) {
         if (raiz == null || nivelObjetivo < 0)
             return new DatosPersonales[0];
@@ -753,19 +718,15 @@ public class ArbolGenealogico {
         return out;
     }
 
-    // --------- Helpers privados (DFS en hijo-izquierdo / hermano-derecho)
-    // ---------
     private int contarEnNivelDesde(Nodo actual, int target, int nivelActual) {
         if (actual == null)
             return 0;
 
         int c = (nivelActual == target) ? 1 : 0;
 
-        // Solo bajamos a hijos si aún no alcanzamos el nivel objetivo
         if (nivelActual < target) {
             c += contarEnNivelDesde(actual.ligaLista, target, nivelActual + 1);
         }
-        // Siempre recorremos hermanos al mismo nivel
         c += contarEnNivelDesde(actual.liga, target, nivelActual);
 
         return c;
@@ -777,16 +738,13 @@ public class ArbolGenealogico {
 
         if (nivelActual == target) {
             System.out.println("  - " + actual.datos);
-            // No bajamos a hijos; solo seguimos hermanos
             imprimirNivelDesde(actual.liga, target, nivelActual);
             return;
         }
 
-        // Bajar a hijos si aún no alcanzamos el nivel
         if (nivelActual < target) {
             imprimirNivelDesde(actual.ligaLista, target, nivelActual + 1);
         }
-        // Recorrer hermanos
         imprimirNivelDesde(actual.liga, target, nivelActual);
     }
 
@@ -796,7 +754,7 @@ public class ArbolGenealogico {
             return idx;
 
         if (nivelActual == target) {
-            out[idx++] = actual.datos; // mantiene orden left-to-right
+            out[idx++] = actual.datos;
             return llenarNivelDesde(actual.liga, target, nivelActual, out, idx);
         }
 
@@ -806,9 +764,9 @@ public class ArbolGenealogico {
         return llenarNivelDesde(actual.liga, target, nivelActual, out, idx);
     }
 
-    // En ArbolGenealogico
-
-    // Elimina todos los nodos en 'nivelObjetivo' (y sus subárboles).
+    /*
+     * Eliminar Nivel: Eliminar todos los nodos que se encuentren en un nivel específico del árbol.
+     */
     public int eliminarNivel(int nivelObjetivo) {
         if (raiz == null)
             return 3;
@@ -819,7 +777,7 @@ public class ArbolGenealogico {
         if (cuantos == 0)
             return 4;
 
-        if (nivelObjetivo == 0) { // borrar toda la raíz (y todo el árbol)
+        if (nivelObjetivo == 0) {
             raiz = null;
             return 1;
         }
@@ -828,9 +786,6 @@ public class ArbolGenealogico {
         return 1;
     }
 
-    // --------- Helpers ---------
-
-    // Recorre y, cuando está en el nivel padre (target-1), corta la lista de hijos.
     private boolean eliminarNivelDesde(Nodo actual, int nivelActual, int target) {
         if (actual == null)
             return false;
@@ -838,10 +793,9 @@ public class ArbolGenealogico {
 
         if (nivelActual == target - 1) {
             if (actual.ligaLista != null) {
-                actual.ligaLista = null; // corta TODOS los nodos del nivel target (y sus subárboles)
+                actual.ligaLista = null;
                 elim = true;
             }
-            // continuar con hermanos en el mismo nivel padre
             return eliminarNivelDesde(actual.liga, nivelActual, target) || elim;
         }
 
@@ -851,12 +805,9 @@ public class ArbolGenealogico {
             return eHijos || eHerm;
         }
 
-        // nivelActual > target-1 (no debería ocurrir con el flujo normal), avanzar
-        // hermanos
         return eliminarNivelDesde(actual.liga, nivelActual, target) || elim;
     }
 
-    // Cuenta cuántos nodos hay exactamente en 'target'
     private int contarEnNivelDesdeV2(Nodo actual, int target, int nivelActual) {
         if (actual == null)
             return 0;

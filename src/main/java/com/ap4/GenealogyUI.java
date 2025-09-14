@@ -7,13 +7,7 @@ import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.util.Objects;
 
-/**
- * UI para gestionar y visualizar el Árbol Genealógico usando tu estructura:
- *  - ligaLista = primer hijo
- *  - liga      = siguiente hermano
- *
- * No usa listas ni colecciones en la estructura; solo Swing para la vista.
- */
+
 public class GenealogyUI extends JFrame {
 
     private final ArbolGenealogico arbol = new ArbolGenealogico();
@@ -45,7 +39,6 @@ public class GenealogyUI extends JFrame {
         setMinimumSize(new Dimension(1200, 700));
         setLocationRelativeTo(null);
 
-        // Look and feel "moderno"
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             UIManager.put("TextArea.font", new Font("Segoe UI", Font.PLAIN, 13));
@@ -76,7 +69,6 @@ public class GenealogyUI extends JFrame {
 
         btSeed.addActionListener(e -> seedDemo());
         btClear.addActionListener(e -> {
-            // Reiniciar rápido: eliminar nivel 0
             int code = arbol.eliminarNivel(0);
             refreshTree();
             log("Reiniciado árbol. Código: " + code);
@@ -127,7 +119,6 @@ public class GenealogyUI extends JFrame {
         return foot;
     }
 
-    // --------- TABS ---------
 
     private JComponent buildTabGestion() {
         JPanel p = panelGrid(10);
@@ -442,24 +433,18 @@ public class GenealogyUI extends JFrame {
     }
     private void warn(String m){ JOptionPane.showMessageDialog(this, m, "Atención", JOptionPane.WARNING_MESSAGE); }
 
-    // ---- Semilla de datos de ejemplo ----
     private void seedDemo() {
-        // Limpia todo
         arbol.eliminarNivel(0);
 
-        // Raíz
         arbol.registrar(new DatosPersonales("Oscar", 50, 60), -1);
 
-        // Hijos de Oscar (ordenados por cédula)
         arbol.registrar(new DatosPersonales("Santiago", 30, 25), 50);
         arbol.registrar(new DatosPersonales("Jhoana",   40, 23), 50);
         arbol.registrar(new DatosPersonales("Emilio",   70, 21), 50);
 
-        // Nietos
         arbol.registrar(new DatosPersonales("Tomas",    10,  2), 30);
         arbol.registrar(new DatosPersonales("Rosa",     65,  1), 70);
 
-        // Bisnieta
         arbol.registrar(new DatosPersonales("Laura",    90,  0), 65);
 
         refreshTree();
